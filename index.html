@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ficha interactiva - Blockly Games</title>
+<style>
+:root{font-family:Arial,Helvetica,sans-serif;color:#172033;background:#f3f6fb}
+*{box-sizing:border-box}body{margin:0;padding:24px 14px}.sheet{max-width:900px;margin:auto;background:#fff;padding:28px;border-radius:16px;box-shadow:0 5px 24px #17203318}
+header{text-align:center;border-bottom:2px solid #dce5f1;padding-bottom:18px}h1{font-size:27px;margin:10px 0 5px;color:#173b69}h2{font-size:19px;margin:0 0 12px;color:#244c78}
+.sub{color:#52647c}.tag{display:inline-block;background:#e5f2ff;color:#135b91;padding:6px 12px;border-radius:20px;font-weight:bold;font-size:13px}
+.student{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:22px 0}.student label{font-weight:bold;font-size:14px}.student input{width:100%;border:0;border-bottom:1px solid #8292a8;padding:8px 2px;font-size:15px;outline:none}
+.info{background:#eef5fc;border-radius:10px;padding:14px;margin:18px 0;line-height:1.5}
+.progress{display:flex;justify-content:space-between;font-weight:bold;margin:20px 0 8px}.bar{height:10px;background:#e5eaf1;border-radius:10px;overflow:hidden}.bar span{display:block;height:100%;width:0;background:#2386c8;transition:width .2s}
+.question{border:1px solid #d9e1eb;border-radius:12px;padding:18px;margin:18px 0;break-inside:avoid}.qhead{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:10px}.qnum{font-weight:bold;color:#245b8e}.point{font-size:12px;background:#f0f3f7;padding:5px 9px;border-radius:15px;color:#52647c}
+.prompt{font-weight:bold;line-height:1.45}.code{white-space:pre-wrap;background:#f0f4f8;border-radius:8px;padding:13px;margin:12px 0;font-family:Consolas,monospace;line-height:1.5;color:#24364d}
+.option{display:flex;gap:10px;align-items:flex-start;padding:10px;border-radius:8px;cursor:pointer;line-height:1.4}.option:hover{background:#f2f7fc}.option input{margin-top:3px;accent-color:#176fae;transform:scale(1.15)}.option.correct{background:#e7f7ed}.option.wrong{background:#fff0f0}
+.feedback{display:none;background:#f1f5f9;padding:11px;border-radius:8px;margin-top:10px;line-height:1.45;font-size:14px}.question.graded .feedback{display:block}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin:22px 0}.actions button{border:0;border-radius:9px;padding:12px 18px;font-size:15px;font-weight:bold;cursor:pointer;background:#176fae;color:#fff}.actions button.secondary{background:#e8edf3;color:#24364d}.actions button:disabled{opacity:.45;cursor:not-allowed}
+#result{display:none;text-align:center;background:#eef5fc;border-radius:12px;padding:20px;margin:20px 0}#score{font-size:34px;font-weight:bold;color:#176fae;margin:8px}
+footer{font-size:12px;color:#64748b;border-top:1px solid #dce5f1;padding-top:14px;margin-top:24px}
+@media(max-width:600px){.sheet{padding:18px}.student{grid-template-columns:1fr}h1{font-size:23px}}
+@media print{body{background:#fff;padding:0}.sheet{box-shadow:none;max-width:none}.actions,#result{display:none!important}.question{break-inside:avoid}}
+</style>
+</head>
+<body>
+<main class="sheet">
+<header>
+<span class="tag">FICHA INTERACTIVA · NIVEL MEDIO–AVANZADO</span>
+<h1>RETO DE PROGRAMACIÓN</h1>
+<h2>Blockly Games: lógica y pensamiento computacional</h2>
+<div class="sub">Computación e Informática · 1.er y 2.º año de secundaria</div>
+</header>
+<section class="student">
+<label>Nombre del estudiante:<input type="text" id="studentName"></label>
+<label>Grado y sección:<input type="text"></label>
+<label>Fecha:<input type="date"></label>
+</section>
+<div class="info"><b>Propósito de aprendizaje</b><br>Interpretar secuencias de bloques, utilizar estructuras de control, identificar errores y resolver desafíos mediante algoritmos.<br><b>Indicaciones:</b> Lee cada pregunta y marca una sola alternativa. Al terminar, presiona «Calificar mis respuestas».</div>
+<div class="progress"><span>Progreso de respuestas</span><span id="count">0/10</span></div>
+<div class="bar"><span id="bar"></span></div>
+<div id="questions"></div>
+<div class="actions">
+<button id="grade" disabled>Calificar mis respuestas</button>
+<button class="secondary" id="reset">Borrar / volver a intentar</button>
+<button class="secondary" onclick="window.print()">Imprimir ficha</button>
+</div>
+<section id="result" aria-live="polite">
+<h2>RESULTADO FINAL</h2><div id="score"></div><div id="message"></div>
+<button class="secondary" id="toggleKey">Ver clave de respuestas</button>
+<div id="key" style="display:none;text-align:left;max-width:420px;margin:15px auto"></div>
+</section>
+<footer>Evaluación: 2 puntos por pregunta. Puntaje máximo: 20 puntos. La ficha funciona localmente en el navegador; no envía ni almacena las respuestas en Internet.</footer>
+</main>
+<script>
+const data = [
+{q:"¿Qué secuencia permite que el personaje avance 3 casillas utilizando un ciclo?",code:"Objetivo: avanzar 3 veces.",o:["Avanzar → Avanzar","Repetir 3 veces { Avanzar }","Repetir 2 veces { Avanzar }","Girar 3 veces"],a:1,e:"El ciclo Repetir 3 veces ejecuta tres veces la instrucción Avanzar."},
+{q:"¿Qué resultado produce esta secuencia de bloques?",code:"Repetir 4 veces {\\n   Avanzar\\n   Girar a la derecha\\n}",o:["Avanza cuatro veces en línea recta","Gira cuatro veces sin avanzar","Dibuja un cuadrado","Dibuja un triángulo"],a:2,e:"Cada repetición realiza un avance y un giro de 90°, formando un cuadrado."},
+{q:"¿Qué estructura permite ejecutar una acción solamente cuando se cumple una condición?",code:"Evaluar una situación antes de ejecutar una instrucción.",o:["Repetir","Si... entonces","Avanzar","Girar"],a:1,e:"La estructura condicional Si... entonces ejecuta instrucciones cuando la condición es verdadera."},
+{q:"Observa la condición. ¿Qué ocurre si el camino está libre?",code:"SI (camino libre) {\\n   Avanzar\\n} SINO {\\n   Girar a la izquierda\\n}",o:["El personaje gira a la izquierda","El personaje se detiene","El personaje avanza","El personaje retrocede"],a:2,e:"Cuando camino libre es verdadero, se ejecuta Avanzar."},
+{q:"¿Cuántas veces se ejecuta Avanzar en esta secuencia?",code:"Repetir 3 veces {\\n   Repetir 2 veces {\\n      Avanzar\\n   }\\n}",o:["2 veces","3 veces","5 veces","6 veces"],a:3,e:"Los ciclos anidados multiplican sus repeticiones: 3 × 2 = 6."},
+{q:"¿Qué estructura permite que un programa siga ejecutándose mientras una condición sea verdadera?",code:"Ejemplo: avanzar mientras exista camino libre.",o:["Mientras","Si... entonces","Girar","Detener"],a:0,e:"El ciclo Mientras repite las instrucciones mientras se cumpla la condición."},
+{q:"¿Cuál es el valor final del contador si inicialmente vale 0?",code:"Repetir 4 veces {\\n   Avanzar\\n   contador = contador + 1\\n}",o:["0","3","4","5"],a:2,e:"El contador aumenta una unidad en cada una de las cuatro repeticiones."},
+{q:"¿Cuál es el principal error si el objetivo es llegar a una casilla situada tres pasos adelante?",code:"Repetir 2 veces {\\n   Avanzar\\n}",o:["El personaje avanza dos pasos y no llega al objetivo","El personaje avanza tres pasos","El personaje gira dos veces","El personaje no ejecuta ninguna instrucción"],a:0,e:"El ciclo solo realiza dos avances, pero el objetivo requiere tres."},
+{q:"¿Qué estrategia es más eficiente para recorrer un camino de 10 casillas en línea recta?",code:"Objetivo: avanzar 10 casillas.",o:["Escribir diez bloques Avanzar sin ciclo","Repetir 10 veces { Avanzar }","Repetir 5 veces { Girar a la derecha }","Utilizar solamente un bloque Si"],a:1,e:"El ciclo permite reducir bloques y evitar repetir manualmente la misma instrucción."},
+{q:"¿Qué secuencia permite avanzar hasta encontrar un obstáculo y luego girar a la derecha?",code:"Objetivo: tomar decisiones según el camino.",o:["Repetir 3 veces { Avanzar }","SI hay obstáculo { Avanzar }","MIENTRAS el camino esté libre { Avanzar } y después Girar a la derecha","Girar a la derecha continuamente"],a:2,e:"El ciclo Mientras permite avanzar hasta que la condición deje de cumplirse; luego se ejecuta el giro."}
+];
+const letters=["A","B","C","D"];
+let graded=false;
+const root=document.getElementById("questions");
+function render(){
+ root.innerHTML=data.map((q,i)=>`<article class="question" id="q${i}">
+ <div class="qhead"><span class="qnum">Pregunta ${i+1}</span><span class="point">1 punto</span></div>
+ <div class="prompt">${q.q}</div><div class="code">${q.code.replace(/</g,"&lt;").replace(/>/g,"&gt;")}</div>
+ ${q.o.map((v,j)=>`<label class="option" data-opt="${j}"><input type="radio" name="q${i}" value="${j}"><span><b>${letters[j]})</b> ${v}</span></label>`).join("")}
+ <div class="feedback"></div></article>`).join("");
+ root.addEventListener("change",updateProgress);
+}
+function updateProgress(){
+ const n=data.filter((_,i)=>document.querySelector(`input[name="q${i}"]:checked`)).length;
+ document.getElementById("count").textContent=n+"/10";
+ document.getElementById("bar").style.width=(n*10)+"%";
+ document.getElementById("grade").disabled=n!==10||graded;
+}
+document.getElementById("grade").addEventListener("click",()=>{
+ if(graded)return;
+ let score=0;
+ data.forEach((q,i)=>{
+  const card=document.getElementById("q"+i), selected=card.querySelector("input:checked");
+  const chosen=Number(selected.value),correct=chosen===q.a;
+  if(correct)score++;
+  card.classList.add("graded");
+  card.querySelectorAll(".option").forEach((el,j)=>{
+   if(j===q.a)el.classList.add("correct");
+   if(j===chosen&&!correct)el.classList.add("wrong");
+   el.querySelector("input").disabled=true;
+  });
+  card.querySelector(".feedback").innerHTML=`<b>${correct?"¡Correcto!":"Respuesta correcta: "+letters[q.a]}</b><br>${q.e}`;
+ });
+ graded=true;
+ document.getElementById("grade").disabled=true;
+ document.getElementById("score").textContent=(score*2)+"/20";
+ document.getElementById("message").textContent=score>=9?"¡Excelente! Dominas muy bien la lógica de programación.":score>=7?"¡Buen trabajo! Sigue fortaleciendo tus conocimientos.":score>=5?"Vas progresando. Repasa las estructuras de control.":"Necesitas seguir practicando. Revisa las explicaciones de cada pregunta.";
+ document.getElementById("key").innerHTML=data.map((q,i)=>`<p><b>Pregunta ${i+1}:</b> ${letters[q.a]}</p>`).join("");
+ document.getElementById("result").style.display="block";
+ document.getElementById("result").scrollIntoView({behavior:"smooth"});
+});
+document.getElementById("toggleKey").addEventListener("click",()=>{
+ const k=document.getElementById("key"),show=k.style.display==="none";
+ k.style.display=show?"block":"none";
+ document.getElementById("toggleKey").textContent=show?"Ocultar clave de respuestas":"Ver clave de respuestas";
+});
+document.getElementById("reset").addEventListener("click",()=>{
+ graded=false;render();document.getElementById("result").style.display="none";
+ document.getElementById("key").style.display="none";
+ document.getElementById("grade").disabled=true;
+ window.scrollTo({top:0,behavior:"smooth"});
+});
+render();
+</script>
+</body></html>
