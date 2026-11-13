@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ficha Interactiva: Blockly Games (Nivel 2) - 5to Secundaria</title>
+  <style>
+    :root {
+      --bg-color: #f4f7fb;
+      --card-bg: #ffffff;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --maze-color: #16a34a;
+      --maze-bg: #dcfce7;
+      --bird-color: #d97706;
+      --bird-bg: #fef3c7;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --correct-bg: #dcfce7;
+      --correct-border: #16a34a;
+      --correct-text: #14532d;
+      --wrong-bg: #fee2e2;
+      --wrong-border: #dc2626;
+      --wrong-text: #7f1d1d;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      line-height: 1.6;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 820px;
+      background: var(--card-bg);
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: linear-gradient(135deg, #1e3a8a, #2563eb);
+      color: white;
+      padding: 24px 30px;
+    }
+
+    header h1 {
+      font-size: 1.45rem;
+      margin-bottom: 6px;
+    }
+
+    .subtitle {
+      font-size: 0.92rem;
+      opacity: 0.9;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .badge-header {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .progress-bar-container {
+      width: 100%;
+      height: 8px;
+      background: #e2e8f0;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: #10b981;
+      width: 0%;
+      transition: width 0.35s ease;
+    }
+
+    .nav-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 16px 30px;
+      background: #f8fafc;
+      border-bottom: 1px solid var(--border);
+      justify-content: center;
+    }
+
+    .pill {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: white;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .pill:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .pill.active {
+      border: 2px solid var(--primary);
+      color: var(--primary);
+      background: #eff6ff;
+    }
+
+    .pill.answered-correct {
+      background: var(--correct-bg);
+      border-color: var(--correct-border);
+      color: var(--correct-text);
+    }
+
+    .pill.answered-wrong {
+      background: var(--wrong-bg);
+      border-color: var(--wrong-border);
+      color: var(--wrong-text);
+    }
+
+    .quiz-body {
+      padding: 30px;
+      flex: 1;
+    }
+
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .module-tag {
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .module-maze {
+      background: var(--maze-bg);
+      color: var(--maze-color);
+    }
+
+    .module-bird {
+      background: var(--bird-bg);
+      color: var(--bird-color);
+    }
+
+    .question-counter {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .question-text {
+      font-size: 1.18rem;
+      font-weight: 600;
+      margin-bottom: 18px;
+      color: #0f172a;
+    }
+
+    .code-block {
+      background: #1e293b;
+      color: #f8fafc;
+      padding: 14px 18px;
+      border-radius: 10px;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 0.92rem;
+      margin-bottom: 22px;
+      border-left: 4px solid #38bdf8;
+      white-space: pre-wrap;
+    }
+
+    .options-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .option-btn {
+      text-align: left;
+      padding: 14px 18px;
+      border-radius: 10px;
+      border: 2px solid var(--border);
+      background: white;
+      font-size: 0.98rem;
+      color: var(--text-main);
+      cursor: pointer;
+      transition: all 0.18s ease;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .option-btn:hover:not(:disabled) {
+      border-color: var(--primary);
+      background: #f8fafc;
+    }
+
+    .option-btn:disabled {
+      cursor: default;
+    }
+
+    .option-letter {
+      font-weight: 700;
+      background: #e2e8f0;
+      color: #334155;
+      min-width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+    }
+
+    .option-btn.correct {
+      background: var(--correct-bg);
+      border-color: var(--correct-border);
+      color: var(--correct-text);
+    }
+
+    .option-btn.correct .option-letter {
+      background: var(--correct-border);
+      color: white;
+    }
+
+    .option-btn.wrong {
+      background: var(--wrong-bg);
+      border-color: var(--wrong-border);
+      color: var(--wrong-text);
+    }
+
+    .option-btn.wrong .option-letter {
+      background: var(--wrong-border);
+      color: white;
+    }
+
+    .feedback-box {
+      margin-top: 22px;
+      padding: 16px 20px;
+      border-radius: 10px;
+      display: none;
+      font-size: 0.95rem;
+    }
+
+    .feedback-box.show {
+      display: block;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .feedback-box.correct {
+      background: #f0fdf4;
+      border: 1px solid #86efac;
+      color: #14532d;
+    }
+
+    .feedback-box.wrong {
+      background: #fef2f2;
+      border: 1px solid #fca5a5;
+      color: #7f1d1d;
+    }
+
+    .feedback-title {
+      font-weight: 700;
+      margin-bottom: 4px;
+      display: block;
+    }
+
+    .controls {
+      padding: 20px 30px;
+      background: #f8fafc;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      border: none;
+      transition: background 0.2s;
+    }
+
+    .btn-secondary {
+      background: #e2e8f0;
+      color: #334155;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: #cbd5e1;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--primary-hover);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Results Screen */
+    .results-screen {
+      display: none;
+      padding: 36px 30px;
+      text-align: center;
+    }
+
+    .results-screen.show {
+      display: block;
+    }
+
+    .score-circle {
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      background: #eff6ff;
+      border: 6px solid var(--primary);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+    }
+
+    .score-big {
+      font-size: 2.4rem;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1;
+    }
+
+    .score-sub {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-top: 4px;
+    }
+
+    .breakdown-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin: 26px 0;
+      text-align: left;
+    }
+
+    .stat-card {
+      padding: 18px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #f8fafc;
+    }
+
+    .stat-card h3 {
+      font-size: 0.95rem;
+      margin-bottom: 6px;
+    }
+
+    .stat-value {
+      font-size: 1.4rem;
+      font-weight: 700;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 600px) {
+      .quiz-body, header, .controls { padding: 20px; }
+      .question-text { font-size: 1.05rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>Ficha Interactiva: Blockly Games (Nivel 2)</h1>
+    <div class="subtitle">
+      <span>5to Año de Secundaria • Pensamiento Computacional</span>
+      <span class="badge-header">30% Laberinto (5)</span>
+      <span class="badge-header">70% Pájaro (10)</span>
+    </div>
+  </header>
+
+  <div class="progress-bar-container">
+    <div class="progress-bar-fill" id="progressBar"></div>
+  </div>
+
+  <div class="nav-pills" id="navPills"></div>
+
+  <div class="quiz-body" id="quizBody">
+    <div class="meta-row">
+      <span class="module-tag" id="moduleTag">Módulo</span>
+      <span class="question-counter" id="questionCounter">Pregunta 1 de 15</span>
+    </div>
+
+    <div class="question-text" id="questionText"></div>
+    <div class="code-block" id="codeBlock" style="display:none;"></div>
+    <div class="options-list" id="optionsList"></div>
+
+    <div class="feedback-box" id="feedbackBox">
+      <span class="feedback-title" id="feedbackTitle"></span>
+      <span id="feedbackText"></span>
+    </div>
+  </div>
+
+  <div class="results-screen" id="resultsScreen">
+    <h2>¡Ficha Completada!</h2>
+    <p style="color: var(--text-muted); margin-bottom: 22px;">Resultado final en escala vigesimal (0 – 20)</p>
+
+    <div class="score-circle">
+      <span class="score-big" id="finalGrade">00</span>
+      <span class="score-sub" id="rawScore">0 / 15 aciertos</span>
+    </div>
+
+    <p id="performanceMessage" style="font-weight: 600; font-size: 1.05rem;"></p>
+
+    <div class="breakdown-grid">
+      <div class="stat-card" style="border-left: 4px solid var(--maze-color);">
+        <h3 style="color: var(--maze-color);">Módulo Laberinto (30%)</h3>
+        <div class="stat-value" id="mazeStats">0 / 5 (0%)</div>
+        <p style="font-size: 0.85rem; color: var(--text-muted);">Secuencias, bucles y condicionales de ruta</p>
+      </div>
+      <div class="stat-card" style="border-left: 4px solid var(--bird-color);">
+        <h3 style="color: var(--bird-color);">Módulo Pájaro (70%)</h3>
+        <div class="stat-value" id="birdStats">0 / 10 (0%)</div>
+        <p style="font-size: 0.85rem; color: var(--text-muted);">Ángulos, plano cartesiano y lógica booleana</p>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+      <button class="btn btn-secondary" onclick="reviewAnswers()">Revisar respuestas</button>
+      <button class="btn btn-primary" onclick="restartQuiz()">Reiniciar ficha</button>
+    </div>
+  </div>
+
+  <div class="controls" id="controlsBar">
+    <button class="btn btn-secondary" id="prevBtn" onclick="prevQuestion()">← Anterior</button>
+    <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">Siguiente →</button>
+  </div>
+</div>
+
+<script>
+  const questions = [
+    // 30% LABERINTO (5 preguntas)
+    {
+      module: "Laberinto",
+      question: "En el Nivel 2 de Laberinto, el personaje debe avanzar un paso, girar a la izquierda, avanzar otro paso y girar a la derecha. ¿Qué ocurre si omites el segundo bloque 'avanzar' antes de girar a la derecha?",
+      code: "avanzar\ngirar a la izquierda\n// [Falta avanzar aquí]\ngirar a la derecha\navanzar",
+      options: [
+        "El personaje gira en la misma casilla anulando el giro anterior y choca contra la pared.",
+        "El programa corrige automáticamente la trayectoria y avanza dos espacios.",
+        "El personaje salta sobre la pared lateral sin perder el rumbo.",
+        "El bloque 'girar a la derecha' se ignora hasta que exista un camino libre."
+      ],
+      correct: 0,
+      explanation: "Girar a la izquierda y luego girar a la derecha en la misma celda devuelve al personaje a su orientación original sin haber cambiado de fila o columna."
+    },
+    {
+      module: "Laberinto",
+      question: "¿Cuál es la principal ventaja computacional de utilizar el bloque 'repetir hasta llegar a la meta' en lugar de encadenar múltiples bloques 'avanzar'?",
+      code: "repetir hasta (meta) {\n  avanzar\n}",
+      options: [
+        "Aumenta la velocidad de movimiento del personaje en pantalla.",
+        "Permite que el algoritmo funcione para caminos rectos de cualquier longitud usando un solo bloque de acción.",
+        "Evita que el personaje pueda girar en las intersecciones.",
+        "Convierte automáticamente cualquier laberinto en una línea recta."
+      ],
+      correct: 1,
+      explanation: "El bucle condicional evalúa en cada iteración si se alcanzó la meta, optimizando el número de bloques y haciendo el algoritmo escalable."
+    },
+    {
+      module: "Laberinto",
+      question: "Si el personaje avanza por un pasillo recto sin desvíos y ejecuta la siguiente instrucción condicional, ¿qué sucederá?",
+      code: "avanzar\nsi (hay camino a la izquierda) {\n  girar a la izquierda\n}\navanzar",
+      options: [
+        "El programa se detiene y muestra un error de ejecución.",
+        "El personaje gira a la izquierda y choca contra el muro.",
+        "La condición evalúa a falso, omite el giro y ejecuta el siguiente bloque 'avanzar'.",
+        "El personaje retrocede a la casilla inicial."
+      ],
+      correct: 2,
+      explanation: "Un bloque 'si' (if) únicamente ejecuta su interior cuando la condición es verdadera; si es falsa, continúa con el flujo normal debajo del bloque."
+    },
+    {
+      module: "Laberinto",
+      question: "En un camino en forma de escalera descendente hacia la derecha, ¿qué estructura de control permite resolverlo dentro de un bucle 'repetir hasta la meta'?",
+      code: "repetir hasta (meta) {\n  si (hay camino adelante) {\n    avanzar\n  } si no {\n    girar a la derecha\n  }\n}",
+      options: [
+        "Funciona si solo se requieren giros a la derecha cuando hay pared al frente.",
+        "Falla siempre porque 'si no' únicamente puede contener bloques de movimiento.",
+        "El personaje girará en círculos en la primera casilla.",
+        "Solo funciona si la escalera tiene exactamente 3 escalones."
+      ],
+      correct: 0,
+      explanation: "La estructura 'si / si no' permite avanzar mientras haya vía libre y ejecutar un giro cada vez que se topa con una esquina frontal."
+    },
+    {
+      module: "Laberinto",
+      question: "Un estudiante coloca únicamente un bloque 'girar a la izquierda' dentro de 'repetir hasta llegar a la meta'. ¿Cuál es el resultado al ejecutar el algoritmo?",
+      code: "repetir hasta (meta) {\n  girar a la izquierda\n}",
+      options: [
+        "El personaje avanza en espiral hasta encontrar la salida.",
+        "El bloque de bucle detecta el error y no inicia la ejecución.",
+        "Se produce un bucle infinito donde el personaje gira sobre su propio eje sin desplazarse.",
+        "El personaje avanza hacia atrás."
+      ],
+      correct: 2,
+      explanation: "Como nunca cambia su posición ni alcanza la meta, la condición de parada jamás se cumple, generando un ciclo infinito en el mismo punto."
+    },
+
+    // 70% PÁJARO (10 preguntas)
+    {
+      module: "Pájaro",
+      question: "En el módulo Pájaro, las direcciones funcionan como un transportador trigonométrico estándar. ¿Qué ángulos corresponden a volar horizontalmente hacia la derecha (Este) y hacia la izquierda (Oeste)?",
+      options: [
+        "90° hacia la derecha y 270° hacia la izquierda.",
+        "0° hacia la derecha y 180° hacia la izquierda.",
+        "180° hacia la derecha y 0° hacia la izquierda.",
+        "45° hacia la derecha y 225° hacia la izquierda."
+      ],
+      correct: 1,
+      explanation: "En el sistema angular de Blockly Pájaro, 0° apunta hacia el Este (+X), 90° al Norte (+Y), 180° al Oeste (-X) y 270° al Sur (-Y)."
+    },
+    {
+      module: "Pájaro",
+      question: "Si el pájaro se encuentra en la coordenada (x: 30, y: 20) y el gusano está ubicado exactamente encima en (x: 30, y: 85), ¿qué rumbo debe tomar?",
+      options: [
+        "Rumbo 0°",
+        "Rumbo 45°",
+        "Rumbo 90°",
+        "Rumbo 270°"
+      ],
+      correct: 2,
+      explanation: "Al mantenerse constante la coordenada X (30) y aumentar la coordenada Y de 20 a 85, el desplazamiento es estrictamente vertical hacia arriba (90°)."
+    },
+    {
+      module: "Pájaro",
+      question: "El pájaro inicia en (x: 20, y: 20) y debe atrapar un gusano en (x: 80, y: 80) en un mapa sin obstáculos. ¿Qué ángulo lo dirige en línea recta exacta hacia el objetivo?",
+      options: [
+        "30°",
+        "45°",
+        "60°",
+        "90°"
+      ],
+      correct: 1,
+      explanation: "La diferencia en X es +60 (80 - 20) y en Y es +60 (80 - 20). Cuando ΔX = ΔY en el primer cuadrante, el ángulo resultante es arctan(1) = 45°."
+    },
+    {
+      module: "Pájaro",
+      question: "¿Cuál es la función del bloque booleano 'no tiene gusano' dentro de la estructura condicional de Pájaro?",
+      code: "si (no tiene gusano) {\n  rumbo 0\n} si no {\n  rumbo 90\n}",
+      options: [
+        "Elimina el gusano del escenario para ir directo al nido.",
+        "Permite ejecutar una ruta de búsqueda mientras no haya atrapado el gusano y cambiar de trayectoria apenas lo capture.",
+        "Hace que el pájaro vuele al doble de velocidad cuando tiene hambre.",
+        "Reinicia el nivel si el pájaro toca una pared."
+      ],
+      correct: 1,
+      explanation: "'no tiene gusano' es una variable de estado booleana: es verdadera antes de tocar el gusano y pasa a ser falsa inmediatamente después de capturarlo."
+    },
+    {
+      module: "Pájaro",
+      question: "El plano cartesiano de Pájaro mide 100 × 100 unidades. Si queremos que el pájaro vuele hacia la derecha (0°) únicamente mientras esté en la mitad izquierda del mapa, ¿qué condición usamos?",
+      options: [
+        "x < 50",
+        "x > 50",
+        "y < 50",
+        "y == 100"
+      ],
+      correct: 0,
+      explanation: "El eje horizontal X va de 0 (borde izquierdo) a 100 (borde derecho), por lo que la mitad izquierda corresponde a valores donde x < 50."
+    },
+    {
+      module: "Pájaro",
+      question: "Un muro vertical bloquea el camino entre y = 0 hasta y = 60. Si el pájaro empieza en (20, 20), ¿qué condición asegura que suba (90°) hasta superar la altura del muro?",
+      options: [
+        "y > 60",
+        "x < 60",
+        "y < 65",
+        "y == 20"
+      ],
+      correct: 2,
+      explanation: "Mientras su coordenada vertical Y sea menor a 65 (por encima del límite 60 del muro), seguirá subiendo a 90° antes de cruzar horizontalmente."
+    },
+    {
+      module: "Pájaro",
+      question: "Analiza el siguiente bloque con el operador lógico 'Y' (AND). ¿En qué momento el pájaro dejará de volar con rumbo 0°?",
+      code: "si (no tiene gusano) Y (x < 75) {\n  rumbo 0\n}",
+      options: [
+        "Únicamente cuando atrape el gusano y además llegue a x = 75 al mismo tiempo.",
+        "En el instante en que atrape el gusano O cuando su coordenada X alcance o supere 75.",
+        "Nunca dejará de volar a 0°.",
+        "Cuando su coordenada Y sea menor a 75."
+      ],
+      correct: 1,
+      explanation: "Con el operador lógico AND (Y), basta con que una de las dos condiciones deje de cumplirse para que toda la expresión sea falsa."
+    },
+    {
+      module: "Pájaro",
+      question: "El pájaro parte de (20, 20), el gusano está en (80, 20) y el nido en (80, 80). ¿Qué secuencia lógica completa el nivel correctamente?",
+      options: [
+        "si (no tiene gusano) -> rumbo 90°, si no -> rumbo 0°",
+        "si (no tiene gusano) -> rumbo 0°, si no -> rumbo 90°",
+        "si (x < 80) -> rumbo 45°, si no -> rumbo 180°",
+        "si (y < 80) -> rumbo 270°, si no -> rumbo 0°"
+      ],
+      correct: 1,
+      explanation: "Primero debe desplazarse horizontalmente a la derecha (0°) desde x=20 hasta x=80 para atrapar el gusano; luego subir verticalmente (90°) hasta y=80."
+    },
+    {
+      module: "Pájaro",
+      question: "Para rodear una pared vertical ubicada en x = 50 (que va de y = 0 a y = 50), el pájaro en (20, 20) debe subir primero y luego avanzar hacia el nido en (80, 20). ¿Qué estructura 'si / si no' lo logra?",
+      code: "si (__________) {\n  rumbo 90\n} si no {\n  rumbo 0\n}",
+      options: [
+        "x < 50",
+        "y < 55",
+        "y > 55",
+        "x > 80"
+      ],
+      correct: 1,
+      explanation: "Si usamos 'x < 50', subiría infinitamente en x=20 sin cruzar jamás. Al usar 'y < 55', sube hasta superar el borde superior del muro y luego cambia a rumbo 0°."
+    },
+    {
+      module: "Pájaro",
+      question: "Si el pájaro ya tiene el gusano en la posición (20, 80) y debe volar en línea recta hacia el nido ubicado en (80, 20), ¿qué ángulo de rumbo corresponde al cuarto cuadrante?",
+      options: [
+        "135°",
+        "225°",
+        "315°",
+        "45°"
+      ],
+      correct: 2,
+      explanation: "Avanzar hacia la derecha (+X) y hacia abajo (-Y) en proporciones iguales corresponde a -45°, que en escala positiva de 0° a 360° equivale a 315°."
+    }
+  ];
+
+  let currentIdx = 0;
+  let userAnswers = new Array(questions.length).fill(null);
+
+  const navPillsEl = document.getElementById('navPills');
+  const progressBarEl = document.getElementById('progressBar');
+  const moduleTagEl = document.getElementById('moduleTag');
+  const questionCounterEl = document.getElementById('questionCounter');
+  const questionTextEl = document.getElementById('questionText');
+  const codeBlockEl = document.getElementById('codeBlock');
+  const optionsListEl = document.getElementById('optionsList');
+  const feedbackBoxEl = document.getElementById('feedbackBox');
+  const feedbackTitleEl = document.getElementById('feedbackTitle');
+  const feedbackTextEl = document.getElementById('feedbackText');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const quizBodyEl = document.getElementById('quizBody');
+  const resultsScreenEl = document.getElementById('resultsScreen');
+  const controlsBarEl = document.getElementById('controlsBar');
+
+  function initPills() {
+    navPillsEl.innerHTML = '';
+    questions.forEach((q, idx) => {
+      const btn = document.createElement('button');
+      btn.className = 'pill';
+      btn.textContent = idx + 1;
+      btn.title = `Pregunta ${idx + 1} (${q.module})`;
+      btn.onclick = () => {
+        resultsScreenEl.classList.remove('show');
+        quizBodyEl.style.display = 'block';
+        controlsBarEl.style.display = 'flex';
+        currentIdx = idx;
+        renderQuestion();
+      };
+      navPillsEl.appendChild(btn);
+    });
+  }
+
+  function updatePills() {
+    const pills = navPillsEl.querySelectorAll('.pill');
+    pills.forEach((pill, idx) => {
+      pill.className = 'pill';
+      if (idx === currentIdx) pill.classList.add('active');
+      if (userAnswers[idx] !== null) {
+        if (userAnswers[idx] === questions[idx].correct) {
+          pill.classList.add('answered-correct');
+        } else {
+          pill.classList.add('answered-wrong');
+        }
+      }
+    });
+
+    const answeredCount = userAnswers.filter(a => a !== null).length;
+    progressBarEl.style.width = `${(answeredCount / questions.length) * 100}%`;
+  }
+
+  function renderQuestion() {
+    const q = questions[currentIdx];
+    updatePills();
+
+    moduleTagEl.textContent = `Módulo: ${q.module}`;
+    moduleTagEl.className = `module-tag ${q.module === 'Laberinto' ? 'module-maze' : 'module-bird'}`;
+    questionCounterEl.textContent = `Pregunta ${currentIdx + 1} de ${questions.length}`;
+    questionTextEl.textContent = q.question;
+
+    if (q.code) {
+      codeBlockEl.style.display = 'block';
+      codeBlockEl.textContent = q.code;
+    } else {
+      codeBlockEl.style.display = 'none';
+    }
+
+    optionsListEl.innerHTML = '';
+    const letters = ['A', 'B', 'C', 'D'];
+    const selected = userAnswers[currentIdx];
+
+    q.options.forEach((opt, idx) => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.innerHTML = `<span class="option-letter">${letters[idx]}</span><span>${opt}</span>`;
+
+      if (selected !== null) {
+        btn.disabled = true;
+        if (idx === q.correct) btn.classList.add('correct');
+        else if (idx === selected) btn.classList.add('wrong');
+      } else {
+        btn.onclick = () => selectOption(idx);
+      }
+
+      optionsListEl.appendChild(btn);
+    });
+
+    if (selected !== null) {
+      showFeedback(selected === q.correct, q.explanation);
+    } else {
+      feedbackBoxEl.className = 'feedback-box';
+    }
+
+    prevBtn.disabled = currentIdx === 0;
+    nextBtn.textContent = currentIdx === questions.length - 1 ? 'Ver resultados ✓' : 'Siguiente →';
+  }
+
+  function selectOption(optionIdx) {
+    if (userAnswers[currentIdx] !== null) return;
+    userAnswers[currentIdx] = optionIdx;
+    renderQuestion();
+  }
+
+  function showFeedback(isCorrect, explanation) {
+    feedbackBoxEl.className = `feedback-box show ${isCorrect ? 'correct' : 'wrong'}`;
+    feedbackTitleEl.textContent = isCorrect ? '¡Respuesta correcta!' : 'Respuesta incorrecta';
+    feedbackTextEl.textContent = explanation;
+  }
+
+  function prevQuestion() {
+    if (currentIdx > 0) {
+      currentIdx--;
+      renderQuestion();
+    }
+  }
+
+  function nextQuestion() {
+    if (currentIdx < questions.length - 1) {
+      currentIdx++;
+      renderQuestion();
+    } else {
+      showResults();
+    }
+  }
+
+  function showResults() {
+    quizBodyEl.style.display = 'none';
+    controlsBarEl.style.display = 'none';
+    resultsScreenEl.classList.add('show');
+
+    let totalCorrect = 0;
+    let mazeCorrect = 0;
+    let birdCorrect = 0;
+
+    questions.forEach((q, idx) => {
+      if (userAnswers[idx] === q.correct) {
+        totalCorrect++;
+        if (q.module === 'Laberinto') mazeCorrect++;
+        else birdCorrect++;
+      }
+    });
+
+    const vigesimal = Math.round((totalCorrect / questions.length) * 20);
+    document.getElementById('finalGrade').textContent = vigesimal.toString().padStart(2, '0');
+    document.getElementById('rawScore').textContent = `${totalCorrect} / ${questions.length} aciertos`;
+
+    document.getElementById('mazeStats').textContent = `${mazeCorrect} / 5 (${Math.round((mazeCorrect / 5) * 100)}%)`;
+    document.getElementById('birdStats').textContent = `${birdCorrect} / 10 (${Math.round((birdCorrect / 10) * 100)}%)`;
+
+    const msgEl = document.getElementById('performanceMessage');
+    if (vigesimal >= 18) {
+      msgEl.textContent = "Excelente dominio de ángulos, coordenadas cartesianas y estructuras condicionales.";
+      msgEl.style.color = "#15803d";
+    } else if (vigesimal >= 14) {
+      msgEl.textContent = "Buen desempeño. Revisa los detalles de ángulos compuestos y operadores lógicos.";
+      msgEl.style.color = "#1d4ed8";
+    } else if (vigesimal >= 11) {
+      msgEl.textContent = "Aprobado, pero se recomienda reforzar la orientación angular en el plano cartesiano.";
+      msgEl.style.color = "#b45309";
+    } else {
+      msgEl.textContent = "Necesitas practicar más las condiciones con coordenadas (X, Y) y bucles básicos.";
+      msgEl.style.color = "#b91c1c";
+    }
+  }
+
+  function reviewAnswers() {
+    resultsScreenEl.classList.remove('show');
+    quizBodyEl.style.display = 'block';
+    controlsBarEl.style.display = 'flex';
+    currentIdx = 0;
+    renderQuestion();
+  }
+
+  function restartQuiz() {
+    userAnswers = new Array(questions.length).fill(null);
+    currentIdx = 0;
+    resultsScreenEl.classList.remove('show');
+    quizBodyEl.style.display = 'block';
+    controlsBarEl.style.display = 'flex';
+    renderQuestion();
+  }
+
+  initPills();
+  renderQuestion();
+</script>
+</body>
+</html>
